@@ -30,7 +30,7 @@ class StripChat(RoomIdBot):
         'maleFemale': Gender.BOTH
     }
 
-    if os.path.exists(_mouflon_cache_filename):
+    try:
         with open(_mouflon_cache_filename) as f:
             try:
                 if not isinstance(_mouflon_keys, dict):
@@ -39,6 +39,10 @@ class StripChat(RoomIdBot):
                 print('Loaded StripChat mouflon key cache')
             except Exception as e:
                 print('Error loading mouflon key cache:', e)
+    except FileNotFoundError:
+        pass
+    except OSError as e:
+        print('Error opening mouflon key cache:', e)
 
     def __init__(self, username, room_id=None):
         if StripChat._static_data is None:
