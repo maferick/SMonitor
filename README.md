@@ -101,6 +101,25 @@ docker compose up -d
 If you want to build the image locally instead of pulling, uncomment the
 `build:` / local `image:` lines in `docker-compose.yml`.
 
+### Portainer Git Stack deploy
+
+Use the repository `docker-compose.yml` directly in a Git Stack and configure
+environment variables as `KEY=VALUE` entries only.
+
+Important: do **not** paste bind mounts into Portainer env vars (for example,
+`- /host/path:/container/path`). That syntax belongs in `volumes:` and causes
+`unexpected character '/' in variable name` when used in `stack.env`.
+
+A ready-to-copy template is provided in [`stack.env.example`](stack.env.example).
+For Synology-style paths, set:
+
+* `DOWNLOADS_PATH=/volume1/Media/Media/media/cam`
+* `CONFIG_PATH=/volume2/Docker/streamonitor/config.json`
+* `PARAMETERS_PATH=/volume2/Docker/streamonitor/parameters.py`
+* `WEB_PORT=5000`
+
+Then deploy the stack.
+
 ### Publishing from your own fork
 
 The CI pushes to Docker Hub, so you need two repository secrets configured
