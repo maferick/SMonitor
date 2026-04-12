@@ -8,7 +8,7 @@ services:
 
     restart: unless-stopped
     environment:
-      # set timzeone
+      # set timezone
       #TZ: Etc/UTC
       # unset password (admin by default)
       #STRMNTR_PASSWORD: ''
@@ -20,7 +20,7 @@ services:
       #STRMNTR_CONFIRM_DEL: "True"
       STRMNTR_CONFIRM_DEL: "MOBILE"
       # enable theater mode
-      #STRMNTR_THEATER_MODE: "True
+      #STRMNTR_THEATER_MODE: "True"
       # set refresh frequency on streamer page
       STRMNTR_STATUS_FREQ: "5"
       # set refresh frequency on list page
