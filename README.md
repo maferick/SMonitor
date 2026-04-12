@@ -92,8 +92,32 @@ When you set the WEBSERVER_HOST it is also accesible to from other computers in 
 
 ## Docker support
 
-You can run this application in docker. I prefer docker-compose so I included an example docker-compose.yml file that you can use.
-Simply start it in the folder with `docker-compose up`.
+Prebuilt images are published to Docker Hub at
+[`maferick/smonitor`](https://hub.docker.com/r/maferick/smonitor).
+Every push to the `master` branch (re)publishes `maferick/smonitor:master`
+via the workflow in [`.github/workflows/build.yml`](.github/workflows/build.yml).
+
+The repository includes an example `docker-compose.yml` that pulls
+`maferick/smonitor:master`. To start it locally:
+
+```
+docker compose up -d
+```
+
+If you want to build the image locally instead of pulling, uncomment the
+`build:` / local `image:` lines in `docker-compose.yml`.
+
+### Publishing from your own fork
+
+The CI pushes to Docker Hub, so you need two repository secrets configured
+under **Settings → Secrets and variables → Actions**:
+
+* `DOCKERHUB_USERNAME` — your Docker Hub username (e.g. `maferick`)
+* `DOCKERHUB_TOKEN` — a Docker Hub access token with **Read & Write**
+  permissions (create one at https://hub.docker.com/settings/security)
+
+The image is pushed as `<DOCKERHUB_USERNAME>/smonitor:<branch-name>`, so
+pushes to `master` land at `<DOCKERHUB_USERNAME>/smonitor:master`.
 
 ## Configuration
 
