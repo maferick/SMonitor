@@ -22,7 +22,7 @@ jobs:
         id: repo
         run: |
           REPO_LC="${GITHUB_REPOSITORY,,}"
-          echo "IMAGE_REPO=$REPO_LC" >> $GITHUB_OUTPUT
+          echo "GHCR_REPO=ghcr.io/$REPO_LC" >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
@@ -31,9 +31,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        if: ${{ secrets.DOCKERHUB_TOKEN != '' }}
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: tags
+        run: |
+          TAGS="${{ steps.repo.outputs.GHCR_REPO }}:${{ steps.tag.outputs.IMAGE_TAG }}"
+          if [ -n "${{ secrets.DOCKERHUB_USERNAME }}" ]; then
+            TAGS="$TAGS,${{ secrets.DOCKERHUB_USERNAME }}/smonitor:${{ steps.tag.outputs.IMAGE_TAG }}"
+          fi
+          echo "TAGS=$TAGS" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ steps.repo.outputs.IMAGE_REPO }}:${{ steps.tag.outputs.IMAGE_TAG }}
+          tags: ${{ steps.tags.outputs.TAGS }}
