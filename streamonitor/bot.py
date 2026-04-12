@@ -254,7 +254,7 @@ class Bot(Thread):
                     break
                 elif self.bulk_update:
                     self._sleep(1)
-                elif self.ratelimit:
+                elif self.sc == Status.RATELIMIT or self.ratelimit:
                     self._sleep(self.sleep_on_ratelimit)
                 elif offline_time > self.long_offline_timeout:
                     self._sleep(self.sleep_on_long_offline)

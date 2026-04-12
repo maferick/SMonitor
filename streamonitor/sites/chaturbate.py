@@ -34,6 +34,48 @@ class Chaturbate(Bot):
         self.cookies_initialized = False
         self.hls_failures = 0
 
+    def _page_headers(self):
+        return {
+            "User-Agent": self.headers["User-Agent"],
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+        }
+
+    def _ajax_headers(self):
+        csrf = None
+        if self.cookies is not None:
+            try:
+                csrf = self.cookies.get('csrftoken')
+            except Exception:
+                csrf = None
+
+        headers = {
+            "User-Agent": self.headers["User-Agent"],
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Origin": "https://chaturbate.com",
+            "Referer": f"https://chaturbate.com/{self.username}/",
+            "X-Requested-With": "XMLHttpRequest",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+        }
+        if csrf:
+            headers["X-CSRFToken"] = csrf
+        return headers
+
     def _normalize_cookies(self, jar):
         return cookiejar_from_dict(dict_from_cookiejar(jar))
 
@@ -76,14 +118,7 @@ class Chaturbate(Bot):
         try:
             r = self.session.get(
                 f"https://chaturbate.com/{self.username}/",
-                headers={
-                    "User-Agent": self.headers["User-Agent"],
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Connection": "keep-alive",
-                    "Upgrade-Insecure-Requests": "1",
-                },
+                headers=self._page_headers(),
                 timeout=30
             )
             if r.status_code == 200:
@@ -109,18 +144,23 @@ class Chaturbate(Bot):
             time.sleep(2)
 
         try:
+            page = self.session.get(
+                f"https://chaturbate.com/{self.username}/",
+                headers=self._page_headers(),
+                cookies=self.cookies,
+                timeout=30
+            )
+            if page.status_code in (403, 429):
+                self.cookies_initialized = False
+                self.consecutive_errors += 1
+                return Status.RATELIMIT
+            if page.cookies:
+                self.cookies = self._normalize_cookies(page.cookies)
+
             r = self.session.post(
                 "https://chaturbate.com/get_edge_hls_url_ajax/",
-                headers={
-                    "User-Agent": self.headers["User-Agent"],
-                    "Accept": "application/json, text/javascript, */*; q=0.01",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Origin": "https://chaturbate.com",
-                    "Referer": f"https://chaturbate.com/{self.username}/",
-                    "Connection": "keep-alive",
-                },
+                headers=self._ajax_headers(),
+                cookies=self.cookies,
                 data={"room_slug": self.username, "bandwidth": "high"},
                 timeout=30
             )
