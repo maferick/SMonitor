@@ -4,7 +4,7 @@ services:
 #    build: ./
 #    image: streamonitor:latest
 
-    image: ghcr.io/lossless1024/streamonitor:latest
+    image: maferick/smonitor:master
 
     restart: unless-stopped
     environment:
