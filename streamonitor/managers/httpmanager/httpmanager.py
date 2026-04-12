@@ -166,9 +166,11 @@ class HTTPManager(Manager):
         @app.route('/video/<user>/<site>/<path:filename>', methods=['GET'])
         def get_video(user, site, filename):
             streamer = cast(Union[Bot, None], self.getStreamer(user, site))
+            as_attachment = request.args.get('download', '0') == '1'
             return send_from_directory(
                 os.path.abspath(streamer.outputFolder),
-                filename
+                filename,
+                as_attachment=as_attachment
             )
 
         @app.route('/videos/watch/<user>/<site>/<path:play_video>', methods=['GET'])
