@@ -1,4 +1,6 @@
 import math
+import os
+import shutil
 from threading import Thread
 from termcolor import colored
 import terminaltables.terminal_io
@@ -73,7 +75,10 @@ class Manager(Thread):
         try:
             streamer.stop(None, None)
             streamer.logger.handlers = []
+            output_folder = streamer.outputFolder
             self.streamers.remove(streamer)
+            if os.path.isdir(output_folder):
+                shutil.rmtree(output_folder)
             self.saveConfig()
             return "OK"
         except Exception as e:
