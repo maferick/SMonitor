@@ -1,7 +1,7 @@
 services:
   streamonitor:
-    # Build directly from this repository's Dockerfile.
-    build: ./
+    # Default to prebuilt GHCR image (works in Portainer environments where buildx is unavailable).
+    image: ${STREAMONITOR_IMAGE:-ghcr.io/lossless1024/streamonitor:latest}
     container_name: streamonitor
     restart: unless-stopped
     environment:
