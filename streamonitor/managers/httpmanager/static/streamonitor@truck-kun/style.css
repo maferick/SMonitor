@@ -1144,3 +1144,56 @@ textarea {
         position: static;
     }
 }
+
+
+/* 2026 polish pass */
+.title-container .du-percent-free {
+    font-size: clamp(1.4rem, 2.7vw, 2rem);
+    font-weight: 800;
+    color: #7dd3fc;
+}
+
+#add-streamer-form,
+.streamers-list-actions {
+    box-shadow: 0 10px 26px rgba(2, 6, 23, 0.35);
+}
+
+.streamers-list .streamer-container a {
+    color: #e2e8f0;
+    font-weight: 700;
+}
+
+.streamers-list .site-container .streamer-link {
+    color: #93c5fd;
+}
+
+.streamers-list .right-align {
+    font-variant-numeric: tabular-nums;
+}
+
+.streamers-list .streamer-will-record button {
+    min-width: 7rem;
+}
+
+@media screen and (max-width: 600px) {
+    .streamers-list tr {
+        border-radius: 0.8rem;
+        overflow: hidden;
+        margin-bottom: 0.65rem;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+}
+
+
+.brand-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.brand-logo {
+    width: clamp(2.1rem, 4vw, 2.7rem);
+    height: clamp(2.1rem, 4vw, 2.7rem);
+    border-radius: 0.7rem;
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.35);
+}

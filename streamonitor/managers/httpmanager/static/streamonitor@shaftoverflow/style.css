@@ -371,3 +371,17 @@ video {
 		font-size: 0.75rem;
 	}
 }
+
+/* Brand assets */
+.brand-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+.brand-logo {
+	width: 2rem;
+	height: 2rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 4px 14px rgba(0, 173, 181, 0.35);
+}
