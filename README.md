@@ -86,8 +86,14 @@ When you set the WEBSERVER_HOST it is also accesible to from other computers in 
 
 ## Docker support
 
-The repository includes an example `docker-compose.yml` that builds directly
-from this repository's `Dockerfile` by default. To start it locally:
+Prebuilt images are published to Docker Hub at
+[`maferick/smonitor`](https://hub.docker.com/r/maferick/smonitor).
+Every push to the `master` branch (re)publishes `maferick/smonitor:master`
+via the workflow in [`.github/workflows/build.yml`](.github/workflows/build.yml).
+
+The repository includes an example `docker-compose.yml` that pulls
+`maferick/smonitor:master` by default (override with `STREAMONITOR_IMAGE` in
+`stack.env` if needed). To start it locally:
 
 ```
 docker compose up -d
