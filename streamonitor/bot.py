@@ -16,10 +16,18 @@ import requests.cookies
 
 from streamonitor.enums import Status, COUNTRIES, Gender, GENDER_DATA
 import streamonitor.log as log
-from parameters import DOWNLOADS_DIR, DEBUG, WANTED_RESOLUTION, WANTED_RESOLUTION_PREFERENCE, CONTAINER, HTTP_USER_AGENT, \
-    STREAM_HICCUP_GRACE_SECONDS, MIN_SEGMENT_FILESIZE
+import parameters
 from streamonitor.downloaders.ffmpeg import getVideoFfmpeg
 from streamonitor.models import VideoData
+
+DOWNLOADS_DIR = parameters.DOWNLOADS_DIR
+DEBUG = parameters.DEBUG
+WANTED_RESOLUTION = parameters.WANTED_RESOLUTION
+WANTED_RESOLUTION_PREFERENCE = parameters.WANTED_RESOLUTION_PREFERENCE
+CONTAINER = parameters.CONTAINER
+HTTP_USER_AGENT = parameters.HTTP_USER_AGENT
+STREAM_HICCUP_GRACE_SECONDS = getattr(parameters, 'STREAM_HICCUP_GRACE_SECONDS', 45)
+MIN_SEGMENT_FILESIZE = getattr(parameters, 'MIN_SEGMENT_FILESIZE', 1024 * 256)
 
 LOADED_SITES = set()
 
