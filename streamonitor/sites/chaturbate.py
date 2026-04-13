@@ -29,7 +29,7 @@ class Chaturbate(Bot):
         })
 
         self.consecutive_errors = 0
-        self.last_request_time = 0
+        self.last_request_time = 0.0
         self.min_request_interval = 20
         self.cookies_initialized = False
         self.hls_failures = 0
@@ -79,6 +79,10 @@ class Chaturbate(Bot):
     def _normalize_cookies(self, jar):
         return cookiejar_from_dict(dict_from_cookiejar(jar))
 
+    def _update_cookies(self, response):
+        if getattr(response, "cookies", None):
+            self.cookies = self._normalize_cookies(response.cookies)
+
     def getWebsiteURL(self):
         return "https://www.chaturbate.com/" + self.username
 
@@ -106,11 +110,11 @@ class Chaturbate(Bot):
         return self.getWantedResolutionPlaylist(url)
 
     def _wait_for_rate_limit(self):
-        now = time.time()
+        now = time.monotonic()
         since = now - self.last_request_time
         if since < self.min_request_interval:
             time.sleep(self.min_request_interval - since + random.uniform(1, 3))
-        self.last_request_time = time.time()
+        self.last_request_time = time.monotonic()
 
     def _initialize_cookies(self):
         if self.cookies_initialized:
@@ -123,10 +127,10 @@ class Chaturbate(Bot):
             )
             if r.status_code == 200:
                 self.cookies_initialized = True
-                self.cookies = self._normalize_cookies(r.cookies)
+                self._update_cookies(r)
                 return True
             return False
-        except Exception:
+        except requests.RequestException:
             return False
 
     def getStatus(self):
@@ -154,8 +158,7 @@ class Chaturbate(Bot):
                 self.cookies_initialized = False
                 self.consecutive_errors += 1
                 return Status.RATELIMIT
-            if page.cookies:
-                self.cookies = self._normalize_cookies(page.cookies)
+            self._update_cookies(page)
 
             r = self.session.post(
                 "https://chaturbate.com/get_edge_hls_url_ajax/",
@@ -174,7 +177,11 @@ class Chaturbate(Bot):
                 self.consecutive_errors += 1
                 return Status.ERROR
 
-            self.lastInfo = r.json()
+            try:
+                self.lastInfo = r.json()
+            except ValueError:
+                self.consecutive_errors += 1
+                return Status.ERROR
             status = self.lastInfo.get("room_status", "offline")
 
             if status == "public":
@@ -187,8 +194,7 @@ class Chaturbate(Bot):
                         self.hls_failures = 0
                     return Status.ERROR
 
-                if r.cookies:
-                    self.cookies = self._normalize_cookies(r.cookies)
+                self._update_cookies(r)
 
                 self.hls_failures = 0
                 self.consecutive_errors = 0
@@ -199,7 +205,7 @@ class Chaturbate(Bot):
 
             return Status.OFFLINE
 
-        except Exception:
+        except requests.RequestException:
             self.consecutive_errors += 1
             self.cookies_initialized = False
             return Status.ERROR
