@@ -2,6 +2,7 @@ from itertools import islice
 from typing import cast, Union
 
 from flask import Flask, make_response, render_template, request, send_from_directory, Response
+from flask import cli as flask_cli
 import os
 import json
 import logging
@@ -41,9 +42,13 @@ class HTTPManager(Manager):
             __name__,
             template_folder=f'skins/{self.skin}/templates'
         )
-        
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
+        app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+        app.jinja_env.auto_reload = True
+
         werkzeug_logger = logging.getLogger('werkzeug')
         werkzeug_logger.disabled = True
+        flask_cli.show_server_banner = lambda *args, **kwargs: None
 
         app.add_template_filter(human_file_size, name='tohumanfilesize')
         app.add_template_filter(status_icon, name='status_icon_class')
