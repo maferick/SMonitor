@@ -2,6 +2,7 @@ import errno
 import os
 import subprocess
 import sys
+from contextlib import ExitStack
 
 import requests.cookies
 from threading import Thread
@@ -29,7 +30,7 @@ def getVideoFfmpeg(self, url, filename):
         headers_str = '\r\n'.join(headers_list)
         cmd.extend(['-headers', headers_str])
 
-    if type(self.cookies) is requests.cookies.RequestsCookieJar:
+    if isinstance(self.cookies, requests.cookies.RequestsCookieJar):
         cookies_text = ''
         for cookie in self.cookies:
             cookies_text += cookie.name + "=" + cookie.value + "; path=" + cookie.path + '; domain=' + cookie.domain + '\n'
@@ -81,37 +82,37 @@ def getVideoFfmpeg(self, url, filename):
 
     def execute():
         nonlocal error
-        try:
-            stderr = open(filename + '.stderr.log', 'w+') if DEBUG else subprocess.DEVNULL
-            startupinfo = None
-            if sys.platform == "win32":
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            process = subprocess.Popen(
-                args=cmd, stdin=subprocess.PIPE, stderr=stderr, stdout=subprocess.DEVNULL, startupinfo=startupinfo)
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                self.logger.error('FFMpeg executable not found!')
-                error = True
-                return
-            else:
+        with ExitStack() as stack:
+            stderr = stack.enter_context(open(filename + '.stderr.log', 'w+')) if DEBUG else subprocess.DEVNULL
+            try:
+                startupinfo = None
+                if sys.platform == "win32":
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                process = subprocess.Popen(
+                    args=cmd, stdin=subprocess.PIPE, stderr=stderr, stdout=subprocess.DEVNULL, startupinfo=startupinfo)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    self.logger.error('FFMpeg executable not found!')
+                    error = True
+                    return
                 self.logger.error("Got OSError, errno: " + str(e.errno))
                 error = True
                 return
 
-        while process.poll() is None:
-            if stopping.stop:
-                process.communicate(b'q')
-                break
-            try:
-                process.wait(1)
-            except subprocess.TimeoutExpired:
-                pass
+            while process.poll() is None:
+                if stopping.stop:
+                    process.communicate(b'q')
+                    break
+                try:
+                    process.wait(1)
+                except subprocess.TimeoutExpired:
+                    pass
 
-        if process.returncode and process.returncode != 0 and process.returncode != 255:
-            self.logger.error('The process exited with an error. Return code: ' + str(process.returncode))
-            error = True
-            return
+            if process.returncode and process.returncode != 0 and process.returncode != 255:
+                self.logger.error('The process exited with an error. Return code: ' + str(process.returncode))
+                error = True
+                return
 
     thread = Thread(target=execute)
     thread.start()

@@ -3,7 +3,7 @@ import os
 import subprocess
 from threading import Thread
 from websocket import create_connection, WebSocketConnectionClosedException, WebSocketException
-from contextlib import closing
+from contextlib import ExitStack, closing
 from ffmpy import FFmpeg, FFRuntimeError
 from parameters import DEBUG, CONTAINER, SEGMENT_TIME, FFMPEG_PATH
 
@@ -45,7 +45,7 @@ def getVideoWSSVR(self, url, filename):
                                         debug_('Server is not ready or there was a change')
                                         error = True
                                         return
-                            except:
+                            except (TypeError, json.JSONDecodeError):
                                 debug_('Failed to open the connection')
                                 error = True
                                 return
@@ -72,17 +72,22 @@ def getVideoWSSVR(self, url, filename):
 
     if error:
         return False
+    if not os.path.exists(tmpfilename) or os.path.getsize(tmpfilename) == 0:
+        if os.path.exists(tmpfilename):
+            os.remove(tmpfilename)
+        return False
 
     # Post-processing
     try:
-        stdout = open(filename + '.postprocess_stdout.log', 'w+') if DEBUG else subprocess.DEVNULL
-        stderr = open(filename + '.postprocess_stderr.log', 'w+') if DEBUG else subprocess.DEVNULL
-        output_str = '-c:a copy -c:v copy'
-        if SEGMENT_TIME is not None:
-            output_str += f' -f segment -reset_timestamps 1 -segment_time {str(SEGMENT_TIME)}'
-            filename = basefilename + '_%03d' + suffix + '.' + CONTAINER
-        ff = FFmpeg(executable=FFMPEG_PATH, inputs={tmpfilename: '-ignore_editlist 1'}, outputs={filename: output_str})
-        ff.run(stdout=stdout, stderr=stderr)
+        with ExitStack() as stack:
+            stdout = stack.enter_context(open(filename + '.postprocess_stdout.log', 'w+')) if DEBUG else subprocess.DEVNULL
+            stderr = stack.enter_context(open(filename + '.postprocess_stderr.log', 'w+')) if DEBUG else subprocess.DEVNULL
+            output_str = '-c:a copy -c:v copy'
+            if SEGMENT_TIME is not None:
+                output_str += f' -f segment -reset_timestamps 1 -segment_time {str(SEGMENT_TIME)}'
+                filename = basefilename + '_%03d' + suffix + '.' + CONTAINER
+            ff = FFmpeg(executable=FFMPEG_PATH, inputs={tmpfilename: '-ignore_editlist 1'}, outputs={filename: output_str})
+            ff.run(stdout=stdout, stderr=stderr)
         os.remove(tmpfilename)
     except FFRuntimeError as e:
         if e.exit_code and e.exit_code != 255:
