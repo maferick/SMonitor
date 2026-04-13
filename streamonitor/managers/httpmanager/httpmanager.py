@@ -2,6 +2,7 @@ from itertools import islice
 from typing import cast, Union
 
 from flask import Flask, make_response, render_template, request, send_from_directory, Response
+from flask import cli as flask_cli
 import os
 import json
 import logging
@@ -44,6 +45,7 @@ class HTTPManager(Manager):
         
         werkzeug_logger = logging.getLogger('werkzeug')
         werkzeug_logger.disabled = True
+        flask_cli.show_server_banner = lambda *args, **kwargs: None
 
         app.add_template_filter(human_file_size, name='tohumanfilesize')
         app.add_template_filter(status_icon, name='status_icon_class')
