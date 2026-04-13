@@ -55,6 +55,14 @@ FFMPEG_READRATE = env.int("STRMNTR_FFMPEG_READRATE", 1.3)
 # SEGMENT_TIME = '1:00:00'
 SEGMENT_TIME = env.str("STRMNTR_SEGMENT_TIME", None)
 
+# Remove tiny segmented output files (in MiB) after recording completes.
+# Set to 0 to disable cleanup.
+MIN_SEGMENT_FILE_MIB = env.float("STRMNTR_MIN_SEGMENT_FILE_MIB", 0.0)
+
+# How long a downloader should tolerate temporary network hiccups (in seconds)
+# before giving up and allowing a new file/session to start.
+STREAM_HICCUP_GRACE = env.int("STRMNTR_STREAM_HICCUP_GRACE", 45)
+
 # HTTP Manager configuration
 
 # Bind address for the web server
