@@ -42,7 +42,10 @@ class HTTPManager(Manager):
             __name__,
             template_folder=f'skins/{self.skin}/templates'
         )
-        
+        app.config['TEMPLATES_AUTO_RELOAD'] = True
+        app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+        app.jinja_env.auto_reload = True
+
         werkzeug_logger = logging.getLogger('werkzeug')
         werkzeug_logger.disabled = True
         flask_cli.show_server_banner = lambda *args, **kwargs: None
