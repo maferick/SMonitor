@@ -86,20 +86,23 @@ When you set the WEBSERVER_HOST it is also accesible to from other computers in 
 
 ## Docker support
 
-Prebuilt images are published to Docker Hub at
-[`maferick/smonitor`](https://hub.docker.com/r/maferick/smonitor).
-Every push to the `master` branch (re)publishes `maferick/smonitor:master`
-via the workflow in [`.github/workflows/build.yml`](.github/workflows/build.yml).
+The repository includes an example `docker-compose.yml` that pulls a prebuilt
+GitHub Container Registry image by default:
 
-The repository includes an example `docker-compose.yml` that pulls
-`maferick/smonitor:master`. To start it locally:
+`ghcr.io/lossless1024/streamonitor:latest`
+
+This avoids Portainer/Buildx build-worker issues in environments where
+`compose build` is not available. To start it locally:
 
 ```
 docker compose up -d
 ```
 
-If you want to build the image locally instead of pulling, uncomment the
-`build:` / local `image:` lines in `docker-compose.yml`.
+You can override the default image by setting `STREAMONITOR_IMAGE` in
+`stack.env`.
+
+If you specifically want to build from this repository's Dockerfile, replace
+the `image:` line with `build: ./` in `docker-compose.yml`.
 
 ### Portainer Git Stack deploy
 
@@ -120,10 +123,11 @@ For Synology-style paths, set:
 
 Then deploy the stack.
 
-### Publishing from your own fork
+### Optional: publish from your own fork
 
-The CI pushes to Docker Hub, so you need two repository secrets configured
-under **Settings → Secrets and variables → Actions**:
+If you want to publish a prebuilt image from your own fork, the CI can push to
+Docker Hub when you configure two repository secrets under
+**Settings → Secrets and variables → Actions**:
 
 * `DOCKERHUB_USERNAME` — your Docker Hub username (e.g. `maferick`)
 * `DOCKERHUB_TOKEN` — a Docker Hub access token with **Read & Write**
