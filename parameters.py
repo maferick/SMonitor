@@ -41,6 +41,12 @@ VR_FORMAT_SUFFIX = env.bool("STRMNTR_VR_FORMAT_SUFFIX", True)
 # 1.3 should be the sweet spot but use what works
 FFMPEG_READRATE = env.int("STRMNTR_FFMPEG_READRATE", 1.3)
 
+# Number of seconds to tolerate temporary stream hiccups before flagging a download error.
+STREAM_HICCUP_GRACE_SECONDS = env.int("STRMNTR_STREAM_HICCUP_GRACE", 45)
+
+# Remove tiny segment files generated during unstable stream starts/stops.
+MIN_SEGMENT_FILESIZE = env.int("STRMNTR_MIN_SEGMENT_FILESIZE", 1024 * 256)
+
 # Specify the segment time in seconds
 # If None, the video will be downloaded as a single file
 # Example:

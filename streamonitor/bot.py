@@ -8,13 +8,16 @@ import m3u8
 from time import sleep
 from datetime import datetime
 from threading import Thread
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 import requests
 import requests.cookies
 
 from streamonitor.enums import Status, COUNTRIES, Gender, GENDER_DATA
 import streamonitor.log as log
-from parameters import DOWNLOADS_DIR, DEBUG, WANTED_RESOLUTION, WANTED_RESOLUTION_PREFERENCE, CONTAINER, HTTP_USER_AGENT
+from parameters import DOWNLOADS_DIR, DEBUG, WANTED_RESOLUTION, WANTED_RESOLUTION_PREFERENCE, CONTAINER, HTTP_USER_AGENT, \
+    STREAM_HICCUP_GRACE_SECONDS, MIN_SEGMENT_FILESIZE
 from streamonitor.downloaders.ffmpeg import getVideoFfmpeg
 from streamonitor.models import VideoData
 
@@ -66,6 +69,7 @@ class Bot(Thread):
 
         self.session = requests.Session()
         self.session.headers.update(self.headers)
+        self.setup_session_retry()
         self.cookies = None
         self.cookieUpdater = None
         self.cookie_update_interval = 0
@@ -159,6 +163,34 @@ class Bot(Thread):
         self.video_files = _videos
         self.video_files_total_size = _total_size
 
+    def setup_session_retry(self):
+        retry = Retry(
+            total=5,
+            connect=5,
+            read=5,
+            backoff_factor=0.4,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST"]
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
+
+    def cleanup_tiny_segment_files(self, min_filesize=MIN_SEGMENT_FILESIZE):
+        removed = 0
+        for video in self.video_files:
+            if video.filesize >= min_filesize:
+                continue
+            try:
+                os.remove(video.abs_path)
+                removed += 1
+            except OSError as e:
+                self.logger.warning(f'Failed to remove tiny segment file {video.filename}: {e}')
+
+        if removed > 0:
+            self.log(f'Removed {removed} tiny segment file(s) below {min_filesize} bytes')
+            self.cache_file_list()
+
     def _sleep(self, time):
         while time > 0:
             sleep(1)
@@ -228,6 +260,17 @@ class Bot(Thread):
                                 self.logger.exception(e)
                                 ret = False
                             if not ret:
+                                self.log(f'Stream hiccup detected, waiting up to {STREAM_HICCUP_GRACE_SECONDS}s before erroring')
+                                self._sleep(STREAM_HICCUP_GRACE_SECONDS)
+                                if not self.running or self.quitting:
+                                    continue
+                                try:
+                                    self.sc = self.getStatus()
+                                except Exception:
+                                    self.sc = Status.ERROR
+                                if self.sc == Status.PUBLIC:
+                                    self.log('Recovered from temporary stream hiccup, retrying download')
+                                    continue
                                 self.log('Recording ended with error')
                                 self.sc = Status.ERROR
                                 self.log(self.status())
@@ -237,6 +280,7 @@ class Bot(Thread):
                             self.log('Recording ended')
                             try:
                                 self.cache_file_list()
+                                self.cleanup_tiny_segment_files()
                             except Exception as e:
                                 self.logger.exception(e)
                 except Exception as e:

@@ -5,6 +5,8 @@ from threading import Thread
 from ffmpy import FFmpeg, FFRuntimeError
 from time import sleep
 from contextlib import ExitStack
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from parameters import DEBUG, CONTAINER, SEGMENT_TIME, FFMPEG_PATH
 
 _http_lib = None
@@ -29,28 +31,49 @@ def getVideoNativeHLS(self, url, filename, m3u_processor=None):
     error = False
     tmpfilename = filename[:-len('.' + CONTAINER)] + '.tmp.ts'
     session = requests.Session()
+    retry = Retry(
+        total=5,
+        connect=5,
+        read=5,
+        backoff_factor=0.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["HEAD", "GET", "OPTIONS"]
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
     request_exception = getattr(getattr(requests, "exceptions", None), "RequestException", Exception)
 
     def execute():
         nonlocal error
         downloaded_segments = set()
+        consecutive_failures = 0
         with open(tmpfilename, 'wb') as outfile:
             while not self.stopDownloadFlag:
                 did_download = False
                 try:
                     r = session.get(url, headers=self.headers, cookies=self.cookies, timeout=30)
                     if r.status_code != 200:
-                        error = True
-                        return
+                        consecutive_failures += 1
+                        if consecutive_failures >= 3:
+                            error = True
+                            return
+                        sleep(2)
+                        continue
                     content = r.content.decode("utf-8")
                 except (request_exception, UnicodeDecodeError):
-                    error = True
-                    return
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        error = True
+                        return
+                    sleep(2)
+                    continue
                 if m3u_processor:
                     content = m3u_processor(content)
                 chunklist = m3u8.loads(content)
                 if len(chunklist.segments) == 0:
                     return
+                consecutive_failures = 0
                 for chunk in chunklist.segment_map + chunklist.segments:
                     if chunk.uri in downloaded_segments:
                         continue
@@ -63,11 +86,9 @@ def getVideoNativeHLS(self, url, filename, m3u_processor=None):
                     try:
                         m = session.get(chunk_uri, headers=self.headers, cookies=self.cookies, timeout=30)
                     except request_exception:
-                        error = True
-                        return
+                        continue
                     if m.status_code != 200:
-                        error = True
-                        return
+                        continue
                     outfile.write(m.content)
                     if self.stopDownloadFlag:
                         return
