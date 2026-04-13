@@ -4,5 +4,5 @@ from .filter_streamers import filter_streamers, streamer_list, set_streamer_list
 from .confirm_deletes import confirm_deletes
 
 __all__ = ['get_streamer_context', 'get_recording_query_params',
-           'streamer_list', 'set_streamer_list_cookies',
+           'filter_streamers', 'streamer_list', 'set_streamer_list_cookies',
            'confirm_deletes']

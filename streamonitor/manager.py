@@ -1,5 +1,4 @@
 import math
-from logging import INFO, WARN, ERROR
 from threading import Thread
 from termcolor import colored
 import terminaltables.terminal_io
@@ -160,10 +159,14 @@ class Manager(Thread):
                     output += '!'
                     status_color = None
                     status = streamer.sc
-                    if status == Status.PUBLIC: status_color = 'green'
-                    if status == Status.PRIVATE: status_color = 'magenta'
-                    if status == Status.ERROR: status_color = 'red'
-                    if not streamer.running: status_color = 'grey'
+                    if status == Status.PUBLIC:
+                        status_color = 'green'
+                    if status == Status.PRIVATE:
+                        status_color = 'magenta'
+                    if status == Status.ERROR:
+                        status_color = 'red'
+                    if not streamer.running:
+                        status_color = 'grey'
                     output += colored(' ' + streamer.username + ' '*(maxlen-len(streamer.username)) + ' ', status_color)
                     i += 1
                     if i == table_nx:
