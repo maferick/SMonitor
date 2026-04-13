@@ -7,7 +7,7 @@ from streamonitor.managers.climanager import CLIManager
 from streamonitor.managers.zmqmanager import ZMQManager
 from streamonitor.managers.outofspace_detector import OOSDetector
 from streamonitor.clean_exit import CleanExit
-import streamonitor.sites  # must have
+import streamonitor.sites  # noqa: F401  # must have
 
         
 def is_docker():
@@ -25,7 +25,7 @@ def main():
 
     streamers = config.loadStreamers()
 
-    clean_exit = CleanExit(streamers)
+    _clean_exit = CleanExit(streamers)
 
     oos_detector = OOSDetector(streamers)
     oos_detector.start()

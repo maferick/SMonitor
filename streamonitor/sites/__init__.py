@@ -16,3 +16,24 @@ from .streamate import StreaMate
 from .stripchat import StripChat
 from .stripchat_vr import StripChatVR
 from .xlovecam import XLoveCam
+
+__all__ = [
+    'AmateurTV',
+    'BongaCams',
+    'Cam4',
+    'CamsCom',
+    'CamSoda',
+    'Chaturbate',
+    'CherryTV',
+    'DreamCam',
+    'DreamCamVR',
+    'FanslyLive',
+    'Flirt4Free',
+    'ManyVids',
+    'MyFreeCams',
+    'SexChatHU',
+    'StreaMate',
+    'StripChat',
+    'StripChatVR',
+    'XLoveCam',
+]
