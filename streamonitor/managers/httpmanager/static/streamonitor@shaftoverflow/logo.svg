@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-labelledby="title desc">
+  <title id="title">StreaMonitor Logo</title>
+  <desc id="desc">Gradient S mark with a radar ring and play indicator.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+  </defs>
+  <rect x="18" y="18" width="284" height="284" rx="72" fill="url(#bg)"/>
+  <circle cx="160" cy="160" r="86" fill="none" stroke="rgba(15,23,42,0.35)" stroke-width="18"/>
+  <path d="M208 101c-12-17-31-27-52-27-31 0-56 20-56 45 0 24 18 35 49 42 18 4 27 7 27 16 0 9-10 15-24 15-15 0-30-6-41-17l-20 20c16 16 39 26 62 26 35 0 60-20 60-47 0-22-14-35-45-42-22-5-31-8-31-16 0-9 9-14 22-14 12 0 23 5 32 14z" fill="url(#fg)"/>
+  <path d="M206 154l36 20-36 20z" fill="#22d3ee" opacity="0.95"/>
+</svg>
