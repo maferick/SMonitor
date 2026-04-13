@@ -89,20 +89,16 @@ When you set the WEBSERVER_HOST it is also accesible to from other computers in 
 The repository includes an example `docker-compose.yml` that pulls a prebuilt
 GitHub Container Registry image by default:
 
-`ghcr.io/lossless1024/streamonitor:latest`
-
-This avoids Portainer/Buildx build-worker issues in environments where
-`compose build` is not available. To start it locally:
+The repository includes an example `docker-compose.yml` that pulls
+`maferick/smonitor:master` by default (override with `STREAMONITOR_IMAGE` in
+`stack.env` if needed). To start it locally:
 
 ```
 docker compose up -d
 ```
 
-You can override the default image by setting `STREAMONITOR_IMAGE` in
-`stack.env`.
-
-If you specifically want to build from this repository's Dockerfile, replace
-the `image:` line with `build: ./` in `docker-compose.yml`.
+If you prefer using a prebuilt image, add an `image:` entry to
+`docker-compose.yml` that points at your registry tag.
 
 ### Portainer Git Stack deploy
 
