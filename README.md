@@ -99,8 +99,8 @@ The repository includes an example `docker-compose.yml` that pulls
 docker compose up -d
 ```
 
-If you want to build the image locally instead of pulling, uncomment the
-`build:` / local `image:` lines in `docker-compose.yml`.
+If you prefer using a prebuilt image, add an `image:` entry to
+`docker-compose.yml` that points at your registry tag.
 
 ### Portainer Git Stack deploy
 
@@ -121,10 +121,11 @@ For Synology-style paths, set:
 
 Then deploy the stack.
 
-### Publishing from your own fork
+### Optional: publish from your own fork
 
-The CI pushes to Docker Hub, so you need two repository secrets configured
-under **Settings → Secrets and variables → Actions**:
+If you want to publish a prebuilt image from your own fork, the CI can push to
+Docker Hub when you configure two repository secrets under
+**Settings → Secrets and variables → Actions**:
 
 * `DOCKERHUB_USERNAME` — your Docker Hub username (e.g. `maferick`)
 * `DOCKERHUB_TOKEN` — a Docker Hub access token with **Read & Write**
