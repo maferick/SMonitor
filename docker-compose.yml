@@ -3,7 +3,7 @@ services:
     # For Portainer Git Stack deploys, use a prebuilt image.
     # If you want to build locally, uncomment build and set image accordingly.
     # build: ./
-    image: ghcr.io/lossless1024/streamonitor:latest
+    image: ${STREAMONITOR_IMAGE:-maferick/smonitor:master}
     container_name: streamonitor
     restart: unless-stopped
     environment:
