@@ -92,7 +92,8 @@ Every push to the `master` branch (re)publishes `maferick/smonitor:master`
 via the workflow in [`.github/workflows/build.yml`](.github/workflows/build.yml).
 
 The repository includes an example `docker-compose.yml` that pulls
-`maferick/smonitor:master`. To start it locally:
+`maferick/smonitor:master` by default (override with `STREAMONITOR_IMAGE` in
+`stack.env` if needed). To start it locally:
 
 ```
 docker compose up -d
