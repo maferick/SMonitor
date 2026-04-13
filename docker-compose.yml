@@ -1,7 +1,15 @@
 services:
   streamonitor:
-    # Default to prebuilt GHCR image (works in Portainer environments where buildx is unavailable).
-    image: ${STREAMONITOR_IMAGE:-ghcr.io/lossless1024/streamonitor:latest}
+    # Build the image from this repository's Dockerfile.
+    # Portainer "Stack from Git" clones this repo, then `build.context: .`
+    # tells Compose to build using the Dockerfile at the repo root.
+    # `pull_policy: build` forces a rebuild on every redeploy so git changes
+    # are actually picked up (matches the hint in the Portainer UI).
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${STREAMONITOR_IMAGE:-smonitor:local}
+    pull_policy: build
     container_name: streamonitor
     restart: unless-stopped
     environment:
@@ -19,7 +27,16 @@ services:
       # Refresh frequency on list page
       STRMNTR_LIST_FREQ: ${STRMNTR_LIST_FREQ:-30}
     volumes:
-      # Set these paths in stack.env/.env for Portainer deployments.
+      # IMPORTANT for Portainer "Stack from Git":
+      # Relative paths resolve inside Portainer's cloned copy of this repo,
+      # which is wiped/replaced on every redeploy. For anything that must
+      # persist (downloads, config.json), set ABSOLUTE host paths via the
+      # Portainer stack "Environment variables" section, e.g.:
+      #   DOWNLOADS_PATH=/srv/smonitor/downloads
+      #   CONFIG_PATH=/srv/smonitor/config.json
+      # The .py / .json overrides below are optional — the Dockerfile already
+      # copies them into the image during build. Only set the *_PATH vars if
+      # you want to override the versions baked into the image.
       - ${DOWNLOADS_PATH:-./downloads}:/app/downloads
       - ${CONFIG_PATH:-./config.json}:/app/config.json
       - ${CONTROLLER_PATH:-./Controller.py}:/app/Controller.py
