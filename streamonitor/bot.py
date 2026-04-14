@@ -152,6 +152,18 @@ class Bot(Thread):
     def gender_data(self):
         return GENDER_DATA.get(self.gender, GENDER_DATA.get(Gender.UNKNOWN))
 
+    @property
+    def last_streamed_at(self):
+        latest_mp4 = None
+        for video in self.video_files:
+            if not video.filename.lower().endswith('.mp4'):
+                continue
+            if latest_mp4 is None or video.modified_at > latest_mp4:
+                latest_mp4 = video.modified_at
+        if latest_mp4 is None:
+            return None
+        return datetime.fromtimestamp(latest_mp4)
+
     def cache_file_list(self):
         videos_folder = self.outputFolder
         _videos = []
