@@ -39,6 +39,13 @@
     <td class="right-align">{{ streamer.video_files_total_size | tohumanfilesize(fix_decimals=2) }}</td>
     <td class="right-align">{{ streamer.video_files | count }}</td>
     <td class="center">
+        {% if streamer.last_streamed_at %}
+            {{ streamer.last_streamed_at.strftime('%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+            -
+        {% endif %}
+    </td>
+    <td class="center">
         <button hx-get="/streamer-info/{{ streamer.username }}/{{ streamer.site }}"
             hx-trigger="click"
             hx-target="closest .streamer"

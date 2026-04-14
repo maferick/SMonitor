@@ -14,6 +14,7 @@ class VideoData:
     shortname: str
     filesize: int = 0
     human_readable_filesize: str = '0'
+    modified_at: float = 0
     play = False
 
     def __init__(self, file: os.DirEntry, username: str):
@@ -23,6 +24,7 @@ class VideoData:
         self.filename = file.name
         self.abs_path = os.path.abspath(file.path)
         self.filesize = self._stat.st_size
+        self.modified_at = self._stat.st_mtime
         self.human_readable_filesize = human_file_size(self._stat.st_size)
 
     @property
